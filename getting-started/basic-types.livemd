@@ -1,0 +1,228 @@
+# Basic types
+
+## Types overview
+
+In this chapter we will learn more about Elixir basic types: integers, floats, booleans, atoms, strings, lists and tuples. Some basic types are:
+
+```elixir
+# integer
+1
+# integer
+0x1F
+# float
+1.0
+# boolean
+true
+# atom / symbol
+:atom
+# string
+"elixir"
+# list
+[1, 2, 3]
+# tuple
+{1, 2, 3}
+```
+
+## Basic arythmetic
+
+```elixir
+1 + 2
+```
+
+```elixir
+5 * 6
+```
+
+```elixir
+10 / 2
+```
+
+Notice that `10 / 2` returned a float `5.0` instead of an integer `5`. This is expected. In Elixir, the operator `/` always returns a float. If you want to do integer division or get the division remainder, you can invoke the `div` and `rem` functions:
+
+```elixir
+div(10, 2)
+```
+
+```elixir
+div(10, 2)
+```
+
+```elixir
+rem(10, 3)
+```
+
+Notice that Elixir allows you to drop the parentheses when invoking named functions with at least one argument. This feature gives a cleaner syntax when writing declarations and control-flow constructs. However, Elixir developers generally prefer to use parentheses.
+
+Elixir also supports shortcut notations for entering binary, octal, and hexadecimal numbers:
+
+```elixir
+0b1010
+```
+
+```elixir
+0o777
+```
+
+```elixir
+0x1F
+```
+
+Float numbers require a dot followed by at least one digit and also support `e` for scientific notation:
+
+```elixir
+1.0
+```
+
+```elixir
+1.0e-10
+```
+
+Floats in Elixir are 64-bit double precision.
+
+You can invoke the `round` function to get the closest integer to a given float, or the `trunc` function to get the integer part of a float.
+
+```elixir
+round(3.58)
+```
+
+```elixir
+trunc(3.58)
+```
+
+## Identifying functions and documentation
+
+Functions in Elixir are identified by both their name and their arity. The arity of a function describes the number of arguments that the function takes. From this point on we will use both the function name and its arity to describe functions throughout the documentation. `trunc/1` identifies the function which is named `trunc` and takes `1` argument, whereas `trunc/2` identifies a different (nonexistent) function with the same name but with an arity of `2`.
+
+We can also use this syntax to access documentation. The Elixir shell defines the `h` function, which you can use to access documentation for any function. For example, typing `h trunc/1` is going to print the documentation for the `trunc/1` function:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+iex> h trunc/1
+                             def trunc()
+
+Returns the integer part of number.
+```
+
+`h trunc/1` works because it is defined in `Kernel` module. All functions in the `Kernel` module are automatically imported into our namespace. Most often you will also include the module name when looking up for documentation for a given function:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+iex> h Kernel.trunc/1
+                             def trunc()
+
+Returns the integer part of number.
+```
+
+You can use the module+function to lookup for anything, including operators (try `h Kernel.+/2`). Invoking `h` without arguments displays the documentation for `IEx.Helpers`, which is where `h` and other functionality is defined.
+
+## Booleans
+
+Elixir supports `true` and `false` as booleans:
+
+```elixir
+true
+```
+
+```elixir
+true == false
+```
+
+Elixir provides a bunch of predicate functions to check for a value type. For example, the `is_boolean/1` function can be used to check if a value is a boolean or not:
+
+```elixir
+is_boolean(true)
+```
+
+```elixir
+is_boolean(1)
+```
+
+You can also use `is_integer/1`, `is_float/1` or `is_number/1` to check, respectively, if an argument is an integer, a float, or either.
+
+## Atoms
+
+An atom is a constant whose value is its own name. Some other languages call these symbols. They are often useful to enumerate over distinct values, such as:
+
+```elixir
+:apple
+```
+
+```elixir
+:orange
+```
+
+```elixir
+:watermelon
+```
+
+Atoms are equal if their names are equal.
+
+```elixir
+:apple == :apple
+```
+
+```elixir
+:apple == :orange
+```
+
+Often they are used to express the state of an operation, by using values such as `:ok` and `:error`.
+
+The booleans `true` and `false` are also atoms:
+
+```elixir
+true == true
+```
+
+```elixir
+is_atom(false)
+```
+
+```elixir
+is_boolean(false)
+```
+
+Elixir allows you to skip the leading `:` for the atoms `false`, `true` and `nil`.
+
+Finally, Elixir has a construct called aliases which we will explore later. Aliases start in upper case and are also atoms:
+
+```elixir
+is_atom(Hello)
+```
+
+## Strings
+
+Strings can have line breaks in them. You can introduce them using escape sequences:
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+iex> "hello
+...> world"
+"hello\nworld"
+iex> "hello\nworld"
+"hello\nworld"
+```
+
+You can print a string using the `IO.puts/1` function from the `IO` module:
+
+```elixir
+IO.puts("hello\nworld")
+```
+
+Notice that the `IO.puts/1` function returns the atom `:ok` after printing.
+
+Strings in Elixir are represented internally by contiguous sequences of bytes known as binaries:
+
+```elixir
+is_binary("hellö")
+```
+
+We can also get the number of bytes in a string:
+
+```elixir
+byte_size("hellö")
+```
+
+Notice that the number of bytes in that string is 6, even though it has 5 graphemes. That's because the grapheme "ö" takes 2 bytes to be represented in UTF-8. We can get the actual length of the string, based on the number of graphemes, by using the `String.length/1` function:
