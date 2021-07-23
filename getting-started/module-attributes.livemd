@@ -59,13 +59,9 @@ $ elixirc math.ex
 $ iex
 ```
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> h Math # Access the docs for the module Math
-...
-iex> h Math.sum # Access the docs for the sum function
-...
+ h Math # Access the docs for the module Math
+ h Math.sum # Access the docs for the sum function
 ```
 
 We also provide a tool called [ExDoc](https://github.com/elixir-lang/ex_doc) which is used to generate HTML pages from the documentation.

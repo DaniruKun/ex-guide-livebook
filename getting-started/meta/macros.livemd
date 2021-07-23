@@ -43,15 +43,10 @@ $ iex macros.exs
 
 And play with those definitions:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> require Unless
-iex> Unless.macro_unless true, do: IO.puts "this should never be printed"
-nil
-iex> Unless.fun_unless true, do: IO.puts "this should never be printed"
-"this should never be printed"
-nil
+ require Unless
+ Unless.macro_unless true, do: IO.puts "this should never be printed"
+ Unless.fun_unless true, do: IO.puts "this should never be printed"
 ```
 
 Note that in our macro implementation, the sentence was not printed, although it was printed in our function implementation. That's because the arguments to a function call are evaluated before calling the function. However, macros do not evaluate their arguments. Instead, they receive the arguments as quoted expressions which are then transformed into other quoted expressions. In this case, we have rewritten our `unless` macro to become an `if` behind the scenes.
@@ -85,16 +80,10 @@ And it then returned a quoted expression as follows:
 
 We can actually verify that this is the case by using `Macro.expand_once/2`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> expr = quote do: Unless.macro_unless(true, do: IO.puts "this should never be printed")
-iex> res  = Macro.expand_once(expr, __ENV__)
-iex> IO.puts Macro.to_string(res)
-if(!true) do
-  IO.puts("this should never be printed")
-end
-:ok
+ expr = quote do: Unless.macro_unless(true, do: IO.puts "this should never be printed")
+ res  = Macro.expand_once(expr, __ENV__)
+ IO.puts Macro.to_string(res)
 ```
 
 `Macro.expand_once/2` receives a quoted expression and expands it according to the current environment. In this case, it expanded/invoked the `Unless.macro_unless/2` macro and returned its result. We then proceeded to convert the returned quoted expression to a string and print it (we will talk about `__ENV__` later in this chapter).
@@ -214,19 +203,12 @@ When calling `Macro.expand_once/2` earlier in this chapter, we used the special 
 
 `__ENV__` returns an instance of the `Macro.Env` struct which contains useful information about the compilation environment, including the current module, file, and line, all variables defined in the current scope, as well as imports, requires and so on:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> __ENV__.module
-nil
-iex> __ENV__.file
-"iex"
-iex> __ENV__.requires
-[IEx.Helpers, Kernel, Kernel.Typespec]
-iex> require Integer
-nil
-iex> __ENV__.requires
-[IEx.Helpers, Integer, Kernel, Kernel.Typespec]
+ __ENV__.module
+ __ENV__.file
+ __ENV__.requires
+ require Integer
+ __ENV__.requires
 ```
 
 Many of the functions in the `Macro` module expect an environment. You can read more about these functions in [the docs for the `Macro` module](https://hexdocs.pm/elixir/Macro.html) and learn more about the compilation environment in the [docs for `Macro.Env`](https://hexdocs.pm/elixir/Macro.Env.html).
@@ -237,14 +219,11 @@ Elixir also supports private macros via `defmacrop`. As private functions, these
 
 It is important that a macro is defined before its usage. Failing to define a macro before its invocation will raise an error at runtime, since the macro won't be expanded and will be translated to a function call:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> defmodule Sample do
-...>  def four, do: two + two
-...>  defmacrop two, do: 2
-...> end
-** (CompileError) iex:2: function two/0 undefined
+ defmodule Sample do
+  def four, do: two + two
+  defmacrop two, do: 2
+ end
 ```
 
 ## Write macros responsibly

@@ -86,10 +86,8 @@ This is pretty much all we need to implement our echo server. Let's give it a tr
 
 Start an IEx session inside the `kv_server` application with `iex -S mix`. Inside IEx, run:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> KVServer.accept(4040)
+ KVServer.accept(4040)
 ```
 
 The server is now running, and you will even notice the console is blocked. Let's use [a `telnet` client](https://en.wikipedia.org/wiki/Telnet) to access our server. There are clients available on most operating systems, and their command lines are generally similar:

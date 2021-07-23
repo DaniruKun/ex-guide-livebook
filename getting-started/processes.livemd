@@ -14,37 +14,26 @@ In this chapter, we will learn about the basic constructs for spawning new proce
 
 The basic mechanism for spawning new processes is the auto-imported `spawn/1` function:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> spawn(fn -> 1 + 2 end)
-#PID<0.43.0>
+ spawn(fn -> 1 + 2 end)
 ```
 
 `spawn/1` takes a function which it will execute in another process.
 
 Notice `spawn/1` returns a PID (process identifier). At this point, the process you spawned is very likely dead. The spawned process will execute the given function and exit after the function is done:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> pid = spawn(fn -> 1 + 2 end)
-#PID<0.44.0>
-iex> Process.alive?(pid)
-false
+ pid = spawn(fn -> 1 + 2 end)
+ Process.alive?(pid)
 ```
 
 > Note: you will likely get different process identifiers than the ones we are getting in this guide.
 
 We can retrieve the PID of the current process by calling `self/0`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> self()
-#PID<0.41.0>
-iex> Process.alive?(self())
-true
+ self()
+ Process.alive?(self())
 ```
 
 Processes get much more interesting when we are able to send and receive messages.
@@ -53,16 +42,12 @@ Processes get much more interesting when we are able to send and receive message
 
 We can send messages to a process with `send/2` and receive them with `receive/1`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> send(self(), {:hello, "world"})
-{:hello, "world"}
-iex> receive do
-...>   {:hello, msg} -> msg
-...>   {:world, _msg} -> "won't match"
-...> end
-"world"
+ send(self(), {:hello, "world"})
+ receive do
+   {:hello, msg} -> msg
+   {:world, _msg} -> "won't match"
+ end
 ```
 
 When a message is sent to a process, the message is stored in the process mailbox. The `receive/1` block goes through the current process mailbox searching for a message that matches any of the given patterns. `receive/1` supports guards and many clauses, such as `case/2`.
@@ -71,57 +56,41 @@ The process that sends the message does not block on `send/2`, it puts the messa
 
 If there is no message in the mailbox matching any of the patterns, the current process will wait until a matching message arrives. A timeout can also be specified:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> receive do
-...>   {:hello, msg}  -> msg
-...> after
-...>   1_000 -> "nothing after 1s"
-...> end
-"nothing after 1s"
+ receive do
+   {:hello, msg}  -> msg
+ after
+   1_000 -> "nothing after 1s"
+ end
 ```
 
 A timeout of 0 can be given when you already expect the message to be in the mailbox.
 
 Let's put it all together and send messages between processes:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> parent = self()
-#PID<0.41.0>
-iex> spawn(fn -> send(parent, {:hello, self()}) end)
-#PID<0.48.0>
-iex> receive do
-...>   {:hello, pid} -> "Got hello from #{inspect pid}"
-...> end
-"Got hello from #PID<0.48.0>"
+ parent = self()
+ spawn(fn -> send(parent, {:hello, self()}) end)
+ receive do
+   {:hello, pid} -> "Got hello from #{inspect pid}"
+ end
 ```
 
 The `inspect/1` function is used to convert a data structure's internal representation into a string, typically for printing. Notice that when the `receive` block gets executed the sender process we have spawned may already be dead, as its only instruction was to send a message.
 
 While in the shell, you may find the helper `flush/0` quite useful. It flushes and prints all the messages in the mailbox.
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> send(self(), :hello)
-:hello
-iex> flush()
-:hello
-:ok
+ send(self(), :hello)
+ flush()
 ```
 
 ## Links
 
 The majority of times we spawn processes in Elixir, we spawn them as linked processes. Before we show an example with `spawn_link/1`, let's see what happens when a process started with `spawn/1` fails:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> spawn(fn -> raise "oops" end)
-#PID<0.58.0>
+ spawn(fn -> raise "oops" end)
 
 [error] Process #PID<0.58.00> raised an exception
 ** (RuntimeError) oops
@@ -130,12 +99,9 @@ iex> spawn(fn -> raise "oops" end)
 
 It merely logged an error but the parent process is still running. That's because processes are isolated. If we want the failure in one process to propagate to another one, we should link them. This can be done with `spawn_link/1`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> self()
-#PID<0.41.0>
-iex> spawn_link(fn -> raise "oops" end)
+ self()
+ spawn_link(fn -> raise "oops" end)
 
 ** (EXIT from #PID<0.41.0>) evaluator process exited with reason: an exception was raised:
     ** (RuntimeError) oops
@@ -205,59 +171,36 @@ Note that the `start_link` function starts a new process that runs the `loop/1` 
 
 Let's give it a try by running `iex kv.exs`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, pid} = KV.start_link()
-{:ok, #PID<0.62.0>}
-iex> send(pid, {:get, :hello, self()})
-{:get, :hello, #PID<0.41.0>}
-iex> flush()
-nil
-:ok
+ {:ok, pid} = KV.start_link()
+ send(pid, {:get, :hello, self()})
+ flush()
 ```
 
 At first, the process map has no keys, so sending a `:get` message and then flushing the current process inbox returns `nil`. Let's send a `:put` message and try it again:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> send(pid, {:put, :hello, :world})
-{:put, :hello, :world}
-iex> send(pid, {:get, :hello, self()})
-{:get, :hello, #PID<0.41.0>}
-iex> flush()
-:world
-:ok
+ send(pid, {:put, :hello, :world})
+ send(pid, {:get, :hello, self()})
+ flush()
 ```
 
 Notice how the process is keeping a state and we can get and update this state by sending the process messages. In fact, any process that knows the `pid` above will be able to send it messages and manipulate the state.
 
 It is also possible to register the `pid`, giving it a name, and allowing everyone that knows the name to send it messages:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Process.register(pid, :kv)
-true
-iex> send(:kv, {:get, :hello, self()})
-{:get, :hello, #PID<0.41.0>}
-iex> flush()
-:world
-:ok
+ Process.register(pid, :kv)
+ send(:kv, {:get, :hello, self()})
+ flush()
 ```
 
 Using processes to maintain state and name registration are very common patterns in Elixir applications. However, most of the time, we won't implement those patterns manually as above, but by using one of the many abstractions that ship with Elixir. For example, Elixir provides [agents](https://hexdocs.pm/elixir/Agent.html), which are simple abstractions around state:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, pid} = Agent.start_link(fn -> %{} end)
-{:ok, #PID<0.72.0>}
-iex> Agent.update(pid, fn map -> Map.put(map, :hello, :world) end)
-:ok
-iex> Agent.get(pid, fn map -> Map.get(map, :hello) end)
-:world
+ {:ok, pid} = Agent.start_link(fn -> %{} end)
+ Agent.update(pid, fn map -> Map.put(map, :hello, :world) end)
+ Agent.get(pid, fn map -> Map.get(map, :hello) end)
 ```
 
 A `:name` option could also be given to `Agent.start_link/2` and it would be automatically registered. Besides agents, Elixir provides an API for building generic servers (called `GenServer`), tasks, and more, all powered by processes underneath. Those, along with supervision trees, will be explored with more detail in the ***Mix and OTP guide*** which will build a complete Elixir application from start to finish.

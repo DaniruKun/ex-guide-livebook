@@ -107,25 +107,20 @@ end
 
 Assuming we defined `TestCase` in a file named `tests.exs`, we can open it up by running `iex tests.exs` and define our first tests:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> defmodule MyTest do
-...>   use TestCase
-...>
-...>   test "hello" do
-...>     "hello" = "world"
-...>   end
-...> end
+ defmodule MyTest do
+   use TestCase
+
+   test "hello" do
+     "hello" = "world"
+   end
+ end
 ```
 
 For now, we don't have a mechanism to run tests, but we know that a function named "test hello" was defined behind the scenes. When we invoke it, it should fail:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> MyTest."test hello"()
-** (MatchError) no match of right hand side value: "world"
+ MyTest."test hello"()
 ```
 
 ## Storing information with attributes
@@ -190,19 +185,15 @@ end
 
 By starting a new IEx session, we can now define our tests and run them:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> defmodule MyTest do
-...>   use TestCase
-...>
-...>   test "hello" do
-...>     "hello" = "world"
-...>   end
-...> end
-iex> MyTest.run
-Running test hello
-** (MatchError) no match of right hand side value: "world"
+ defmodule MyTest do
+   use TestCase
+
+   test "hello" do
+     "hello" = "world"
+   end
+ end
+ MyTest.run
 ```
 
 Although we have overlooked some details, this is the main idea behind creating domain-specific modules in Elixir. Macros enable us to return quoted expressions that are executed in the caller, which we can then use to transform code and store relevant information in the target module via module attributes. Finally, callbacks such as `@before_compile` allow us to inject code into the module when its definition is complete.

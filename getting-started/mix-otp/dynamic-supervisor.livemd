@@ -72,15 +72,10 @@ In this case, there is no module, so we picked the name `KV.BucketSupervisor`. I
 
 Run `iex -S mix` so we can give our dynamic supervisor a try:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, bucket} = DynamicSupervisor.start_child(KV.BucketSupervisor, KV.Bucket)
-{:ok, #PID<0.72.0>}
-iex> KV.Bucket.put(bucket, "eggs", 3)
-:ok
-iex> KV.Bucket.get(bucket, "eggs")
-3
+ {:ok, bucket} = DynamicSupervisor.start_child(KV.BucketSupervisor, KV.Bucket)
+ KV.Bucket.put(bucket, "eggs", 3)
+ KV.Bucket.get(bucket, "eggs")
 ```
 
 `DynamicSupervisor.start_child/2` expects the name of the supervisor and the child specification of the child to be started.
@@ -170,10 +165,8 @@ Since we have relied only on a non-shared partition of the bucket supervisor so 
 
 Now that we have defined our supervision tree, it is a great opportunity to introduce the Observer tool that ships with Erlang. Start your application with `iex -S mix` and key this in:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> :observer.start
+ :observer.start
 ```
 
 A GUI should pop-up containing all sorts of information about our system, from general statistics to load charts as well as a list of all running processes and applications.
@@ -186,11 +179,8 @@ In the Applications tab, you will see all applications currently running in your
 
 Not only that, as you create new buckets on the terminal, you should see new processes spawned in the supervision tree shown in Observer:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> KV.Registry.create(KV.Registry, "shopping")
-:ok
+ KV.Registry.create(KV.Registry, "shopping")
 ```
 
 We will leave it up to you to further explore what Observer provides. Note you can double click any process in the supervision tree to retrieve more information about it, as well as right-click a process to send "a kill signal", a perfect way to emulate failures and see if your supervisor reacts as expected.

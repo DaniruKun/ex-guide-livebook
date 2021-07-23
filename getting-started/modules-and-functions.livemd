@@ -7,23 +7,18 @@ redirect_from: /getting-started/modules.html
 
 In Elixir we group several functions into modules. We've already used many different modules in the previous chapters such as [the `String` module](https://hexdocs.pm/elixir/String.html):
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> String.length("hello")
-5
+ String.length("hello")
 ```
 
 In order to create our own modules in Elixir, we use the `defmodule` macro. We use the `def` macro to define functions in that module:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> defmodule Math do
-...>   def sum(a, b) do
-...>     a + b
-...>   end
-...> end
+ defmodule Math do
+   def sum(a, b) do
+     a + b
+   end
+ end
 
 iex> Math.sum(1, 2)
 3
@@ -51,11 +46,8 @@ $ elixirc math.ex
 
 This will generate a file named `Elixir.Math.beam` containing the bytecode for the defined module. If we start `iex` again, our module definition will be available (provided that `iex` is started in the same directory the bytecode file is in):
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Math.sum(1, 2)
-3
+ Math.sum(1, 2)
 ```
 
 Elixir projects are usually organized into three directories:
@@ -151,41 +143,27 @@ Throughout this tutorial, we have been using the notation `name/arity` to refer 
 $ iex math.exs
 ```
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Math.zero?(0)
-true
-iex> fun = &Math.zero?/1
-&Math.zero?/1
-iex> is_function(fun)
-true
-iex> fun.(0)
-true
+ Math.zero?(0)
+ fun = &Math.zero?/1
+ is_function(fun)
+ fun.(0)
 ```
 
 Remember Elixir makes a distinction between anonymous functions and named functions, where the former must be invoked with a dot (`.`) between the variable name and parentheses. The capture operator bridges this gap by allowing named functions to be assigned to variables and passed as arguments in the same way we assign, invoke and pass anonymous functions.
 
 Local or imported functions, like `is_function/1`, can be captured without the module:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> &is_function/1
-&:erlang.is_function/1
-iex> (&is_function/1).(fun)
-true
+ &is_function/1
+ (&is_function/1).(fun)
 ```
 
 Note the capture syntax can also be used as a shortcut for creating functions:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> fun = &(&1 + 1)
-#Function<6.71889879/1 in :erl_eval.expr/5>
-iex> fun.(1)
-2
+ fun = &(&1 + 1)
+ fun.(1)
 
 iex> fun2 = &"Good #{&1}"
 #Function<6.127694169/1 in :erl_eval.expr/5>
@@ -222,15 +200,10 @@ defmodule DefaultTest do
 end
 ```
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> DefaultTest.dowork
-"hello"
-iex> DefaultTest.dowork 123
-123
-iex> DefaultTest.dowork
-"hello"
+ DefaultTest.dowork
+ DefaultTest.dowork 123
+ DefaultTest.dowork
 ```
 
 If a function with default values has multiple clauses, it is required to create a function head (a function definition without a body) for declaring defaults:
@@ -282,20 +255,12 @@ The compiler is telling us that invoking the `join` function with two arguments 
 $ iex concat.ex
 ```
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Concat.join "Hello", "world"
-***First join
-"Helloworld"
+ Concat.join "Hello", "world"
 ```
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Concat.join "Hello", "world", "_"
-***Second join
-"Hello_world"
+ Concat.join "Hello", "world", "_"
 ```
 
 Removing the default argument in this case will fix the warning.

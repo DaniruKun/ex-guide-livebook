@@ -123,15 +123,10 @@ which in turn will register the process with the given name. The `:name` option 
 
 Let's give the updated supervisor a try inside `iex -S mix`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> KV.Supervisor.start_link([])
-{:ok, #PID<0.66.0>}
-iex> KV.Registry.create(KV.Registry, "shopping")
-:ok
-iex> KV.Registry.lookup(KV.Registry, "shopping")
-{:ok, #PID<0.70.0>}
+ KV.Supervisor.start_link([])
+ KV.Registry.create(KV.Registry, "shopping")
+ KV.Registry.lookup(KV.Registry, "shopping")
 ```
 
 This time the supervisor started a named registry, allowing us to create buckets without having to explicitly fetch the PID from the supervisor. You should also know how to make the registry crash again, without looking up its PID: give it a try.
@@ -170,11 +165,8 @@ Each application in our system can be started and stopped. The rules for startin
 
 Let's see this in practice. Start a console with `iex -S mix` and try:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Application.start(:kv)
-{:error, {:already_started, :kv}}
+ Application.start(:kv)
 ```
 
 Oops, it's already started. Mix starts the current application and all of its dependencies automatically. This is also true for `mix test` and many other Mix commands.
@@ -183,40 +175,27 @@ You can change this behaviour by giving the `--no-start` flag to Mix. It is rare
 
 Invoking `mix` is the same as `mix run`. Therefore, if you want to pass a flag to `mix` or `iex -S mix`, we just need to add the task name and the desired flags. For example, run `iex -S mix run --no-start`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Application.start(:kv)
-:ok
+ Application.start(:kv)
 ```
 
 We can stop our `:kv` application as well as the `:logger` application, which is started by default with Elixir:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Application.stop(:kv)
-:ok
-iex> Application.stop(:logger)
-:ok
+ Application.stop(:kv)
+ Application.stop(:logger)
 ```
 
 And let's try to start our application again:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Application.start(:kv)
-{:error, {:not_started, :logger}}
+ Application.start(:kv)
 ```
 
 Now we get an error because an application that `:kv` depends on (`:logger` in this case) isn't started. We need to either start each application manually in the correct order or call `Application.ensure_all_started` as follows:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Application.ensure_all_started(:kv)
-{:ok, [:logger, :kv]}
+ Application.ensure_all_started(:kv)
 ```
 
 In practice, our tools always start our applications for us, but there is an API available if you need fine-grained control.

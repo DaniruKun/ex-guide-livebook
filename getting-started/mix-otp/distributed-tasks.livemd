@@ -43,12 +43,10 @@ My computer is named `jv`, so I see `foo@jv` in the example above, but you will 
 
 Let's define a module named `Hello` in this shell:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> defmodule Hello do
-...>   def world, do: IO.puts "hello world"
-...> end
+ defmodule Hello do
+   def world, do: IO.puts "hello world"
+ end
 ```
 
 If you have another computer on the same network with both Erlang and Elixir installed, you can start another shell on it. If you don't, you can start another IEx session in another terminal. In either case, give it the short name of `bar`:
@@ -59,42 +57,28 @@ $ iex --sname bar
 
 Note that inside this new IEx session, we cannot access `Hello.world/0`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Hello.world
-** (UndefinedFunctionError) undefined function: Hello.world/0
-    Hello.world()
+ Hello.world
 ```
 
 However, we can spawn a new process on `foo@computer-name` from `bar@computer-name`! Let's give it a try (where `@computer-name` is the one you see locally):
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Node.spawn_link :"foo@computer-name", fn -> Hello.world end
-#PID<9014.59.0>
-hello world
+ Node.spawn_link :"foo@computer-name", fn -> Hello.world end
 ```
 
 Elixir spawned a process on another node and returned its pid. The code then executed on the other node where the `Hello.world/0` function exists and invoked that function. Note that the result of "hello world" was printed on the current node `bar` and not on `foo`. In other words, the message to be printed was sent back from `foo` to `bar`. This happens because the process spawned on the other node (`foo`) knows all of the output should be sent back to the original node!
 
 We can send and receive messages from the pid returned by `Node.spawn_link/2` as usual. Let's try a quick ping-pong example:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> pid = Node.spawn_link :"foo@computer-name", fn ->
-...>   receive do
-...>     {:ping, client} -> send client, :pong
-...>   end
-...> end
-#PID<9014.59.0>
-iex> send pid, {:ping, self()}
-{:ping, #PID<0.73.0>}
-iex> flush()
-:pong
-:ok
+ pid = Node.spawn_link :"foo@computer-name", fn ->
+   receive do
+     {:ping, client} -> send client, :pong
+   end
+ end
+ send pid, {:ping, self()}
+ flush()
 ```
 
 From our quick exploration, we could conclude that we should use `Node.spawn_link/2` to spawn processes on a remote node every time we need to do a distributed computation. However, we have learned throughout this guide that spawning processes outside of supervision trees should be avoided if possible, so we need to look for other options.
@@ -140,26 +124,18 @@ $ iex --sname bar -S mix
 
 From inside `bar@computer-name`, we can now spawn a task directly on the other node via the supervisor:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> task = Task.Supervisor.async {KV.RouterTasks, :"foo@computer-name"}, fn ->
-...>   {:ok, node()}
-...> end
-%Task{owner: #PID<0.122.0>, pid: #PID<12467.88.0>, ref: #Reference<0.0.0.400>}
-iex> Task.await(task)
-{:ok, :"foo@computer-name"}
+ task = Task.Supervisor.async {KV.RouterTasks, :"foo@computer-name"}, fn ->
+   {:ok, node()}
+ end
+ Task.await(task)
 ```
 
 Our first distributed task retrieves the name of the node the task is running on. Notice we have given an anonymous function to `Task.Supervisor.async/2` but, in distributed cases, it is preferable to give the module, function, and arguments explicitly:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> task = Task.Supervisor.async {KV.RouterTasks, :"foo@computer-name"}, Kernel, :node, []
-%Task{owner: #PID<0.122.0>, pid: #PID<12467.89.0>, ref: #Reference<0.0.0.404>}
-iex> Task.await(task)
-:"foo@computer-name"
+ task = Task.Supervisor.async {KV.RouterTasks, :"foo@computer-name"}, Kernel, :node, []
+ Task.await(task)
 ```
 
 The difference is that anonymous functions require the target node to have exactly the same code version as the caller. Using module, function, and arguments is more robust because you only need to find a function with matching arity in the given module.

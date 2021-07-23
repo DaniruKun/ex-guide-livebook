@@ -38,39 +38,25 @@ $ iex -S mix
 
 And play a bit with agents:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, agent} = Agent.start_link fn -> [] end
-{:ok, #PID<0.57.0>}
-iex> Agent.update(agent, fn list -> ["eggs" | list] end)
-:ok
-iex> Agent.get(agent, fn list -> list end)
-["eggs"]
-iex> Agent.stop(agent)
-:ok
+ {:ok, agent} = Agent.start_link fn -> [] end
+ Agent.update(agent, fn list -> ["eggs" | list] end)
+ Agent.get(agent, fn list -> list end)
+ Agent.stop(agent)
 ```
 
 We started an agent with an initial state of an empty list. We updated the agent's state, adding our new item to the head of the list. The second argument of [`Agent.update/3`](https://hexdocs.pm/elixir/Agent.html#update/3) is a function that takes the agent's current state as input and returns its desired new state. Finally, we retrieved the whole list. The second argument of [`Agent.get/3`](https://hexdocs.pm/elixir/Agent.html#get/3) is a function that takes the state as input and returns the value that [`Agent.get/3`](https://hexdocs.pm/elixir/Agent.html#get/3) itself will return. Once we are done with the agent, we can call [`Agent.stop/3`](https://hexdocs.pm/elixir/Agent.html#stop/3) to terminate the agent process.
 
 The `Agent.update/3` function accepts as a second argument any function that receives one argument and returns a value:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, agent} = Agent.start_link fn -> [] end
-{:ok, #PID<0.338.0>}
-iex> Agent.update(agent, fn _list -> 123 end)
-:ok
-iex> Agent.update(agent, fn content -> %{a: content} end)
-:ok
-iex> Agent.update(agent, fn content -> [12 | [content]] end)
-:ok
-iex> Agent.update(agent, fn list -> [:nop | list] end)
-:ok
-iex> Agent.get(agent, fn content -> content end)
-[:nop, 12, %{a: 123}]
-iex>
+ {:ok, agent} = Agent.start_link fn -> [] end
+ Agent.update(agent, fn _list -> 123 end)
+ Agent.update(agent, fn content -> %{a: content} end)
+ Agent.update(agent, fn content -> [12 | [content]] end)
+ Agent.update(agent, fn list -> [:nop | list] end)
+ Agent.get(agent, fn content -> content end)
+
 ```
 
 As you can see, we can modify the agent state in any way we want. Therefore, we most likely don't want to access the Agent API throughout many different places in our code. Instead, we want to encapsulate all Agent-related functionality in a single module, which we will call `KV.Bucket`. Before we implement it, let's write some tests which will outline the API exposed by our module.

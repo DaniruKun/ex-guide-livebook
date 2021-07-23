@@ -74,18 +74,10 @@ Elixir provides macros as a mechanism for meta-programming (writing code that ge
 
 Public functions in modules are globally available, but in order to use macros, you need to opt-in by requiring the module they are defined in.
 
-<!-- livebook:{"force_markdown":true} -->
-
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Integer.is_odd(3)
-** (CompileError) iex:1: you must require Integer before invoking the macro Integer.is_odd/1
-    (elixir) src/elixir_dispatch.erl:97: :elixir_dispatch.dispatch_require/6
-iex> require Integer
-Integer
-iex> Integer.is_odd(3)
-true
+ Integer.is_odd(3)
+ require Integer
+ Integer.is_odd(3)
 ```
 
 In Elixir, `Integer.is_odd/1` is defined as a macro so that it can be used as a guard. This means that, in order to invoke `Integer.is_odd/1`, we need to first require the `Integer` module.
@@ -98,15 +90,9 @@ We use `import` whenever we want to access functions or macros from other module
 
 For example, if we want to use the `duplicate/2` function from the `List` module several times, we can import it:
 
-<!-- livebook:{"force_markdown":true} -->
-
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> import List, only: [duplicate: 2]
-List
-iex> duplicate(:ok, 3)
-[:ok, :ok, :ok]
+ import List, only: [duplicate: 2]
+ duplicate(:ok, 3)
 ```
 
 We imported only the function `duplicate` (with arity 2) from `List`. Although `:only` is optional, its usage is recommended in order to avoid importing all the functions of a given module inside the current scope. `:except` could also be given as an option in order to import everything in a module *except* a list of functions.
@@ -169,43 +155,25 @@ At this point, you may be wondering: what exactly is an Elixir alias and how is 
 
 An alias in Elixir is a capitalized identifier (like `String`, `Keyword`, etc) which is converted to an atom during compilation. For instance, the `String` alias translates by default to the atom `:"Elixir.String"`:
 
-<!-- livebook:{"force_markdown":true} -->
-
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> is_atom(String)
-true
-iex> to_string(String)
-"Elixir.String"
-iex> :"Elixir.String" == String
-true
+ is_atom(String)
+ to_string(String)
+ :"Elixir.String" == String
 ```
 
 By using the `alias/2` directive, we are changing the atom the alias expands to.
 
 Aliases expand to atoms because in the Erlang <abbr title="Virtual Machine">VM</abbr> (and consequently Elixir) modules are always represented by atoms:
 
-<!-- livebook:{"force_markdown":true} -->
-
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> List.flatten([1, [2], 3])
-[1, 2, 3]
-iex> :"Elixir.List".flatten([1, [2], 3])
-[1, 2, 3]
+ List.flatten([1, [2], 3])
+ :"Elixir.List".flatten([1, [2], 3])
 ```
 
 That's the mechanism we use to call Erlang modules:
 
-<!-- livebook:{"force_markdown":true} -->
-
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> :lists.flatten([1, [2], 3])
-[1, 2, 3]
+ :lists.flatten([1, [2], 3])
 ```
 
 ## Module nesting

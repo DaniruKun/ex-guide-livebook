@@ -12,42 +12,26 @@ We had originally sketched this chapter to come much earlier in the getting star
 
 The [`IO`](https://hexdocs.pm/elixir/IO.html) module is the main mechanism in Elixir for reading and writing to standard input/output (`:stdio`), standard error (`:stderr`), files, and other IO devices. Usage of the module is pretty straightforward:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> IO.puts("hello world")
-hello world
-:ok
-iex> IO.gets("yes or no? ")
-yes or no? yes
-"yes\n"
+ IO.puts("hello world")
+ IO.gets("yes or no? ")
 ```
 
 By default, functions in the `IO` module read from the standard input and write to the standard output. We can change that by passing, for example, `:stderr` as an argument (in order to write to the standard error device):
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> IO.puts(:stderr, "hello world")
-hello world
-:ok
+ IO.puts(:stderr, "hello world")
 ```
 
 ## The `File` module
 
 The [`File`](https://hexdocs.pm/elixir/File.html) module contains functions that allow us to open files as IO devices. By default, files are opened in binary mode, which requires developers to use the specific `IO.binread/2` and `IO.binwrite/2` functions from the `IO` module:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, file} = File.open("hello", [:write])
-{:ok, #PID<0.47.0>}
-iex> IO.binwrite(file, "world")
-:ok
-iex> File.close(file)
-:ok
-iex> File.read("hello")
-{:ok, "world"}
+ {:ok, file} = File.open("hello", [:write])
+ IO.binwrite(file, "world")
+ File.close(file)
+ File.read("hello")
 ```
 
 A file can also be opened with `:utf8` encoding, which tells the `File` module to interpret the bytes read from the file as UTF-8-encoded bytes.
@@ -56,17 +40,11 @@ Besides functions for opening, reading and writing files, the `File` module has 
 
 You will also notice that functions in the `File` module have two variants: one "regular" variant and another variant with a trailing bang (`!`). For example, when we read the `"hello"` file in the example above, we use `File.read/1`. Alternatively, we can use `File.read!/1`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> File.read("hello")
-{:ok, "world"}
-iex> File.read!("hello")
-"world"
-iex> File.read("unknown")
-{:error, :enoent}
-iex> File.read!("unknown")
-** (File.Error) could not read file "unknown": no such file or directory
+ File.read("hello")
+ File.read!("hello")
+ File.read("unknown")
+ File.read!("unknown")
 ```
 
 Notice that the version with `!` returns the contents of the file instead of a tuple, and if anything goes wrong the function raises an error.
@@ -94,13 +72,9 @@ Therefore, if you don't want to handle the error outcomes, prefer using `File.re
 
 The majority of the functions in the `File` module expect paths as arguments. Most commonly, those paths will be regular binaries. The [`Path`](https://hexdocs.pm/elixir/Path.html) module provides facilities for working with such paths:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Path.join("foo", "bar")
-"foo/bar"
-iex> Path.expand("~/hello")
-"/Users/jose/hello"
+ Path.join("foo", "bar")
+ Path.expand("~/hello")
 ```
 
 Using functions from the `Path` module as opposed to directly manipulating strings is preferred since the `Path` module takes care of different operating systems transparently. Finally, keep in mind that Elixir will automatically convert slashes (`/`) into backslashes (`\`) on Windows when performing file operations.
@@ -111,37 +85,24 @@ With this, we have covered the main modules that Elixir provides for dealing wit
 
 You may have noticed that `File.open/2` returns a tuple like `{:ok, pid}`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, file} = File.open("hello", [:write])
-{:ok, #PID<0.47.0>}
+ {:ok, file} = File.open("hello", [:write])
 ```
 
 That happens because the `IO` module actually works with processes (see [chapter 11](/getting-started/processes.html)). Given a file is a process, when you write to a file that has been closed, you are actually sending a message to a process which has been terminated:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> File.close(file)
-:ok
-iex> IO.write(file, "is anybody out there")
-{:error, :terminated}
+ File.close(file)
+ IO.write(file, "is anybody out there")
 ```
 
 Let's see in more detail what happens when you request `IO.write(pid, binary)`. The `IO` module sends a message to the process identified by `pid` with the desired operation. A small ad-hoc process can help us see it:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> pid = spawn(fn ->
-...>  receive do: (msg -> IO.inspect msg)
-...> end)
-#PID<0.57.0>
-iex> IO.write(pid, "hello")
-{:io_request, #PID<0.41.0>, #Reference<0.0.8.91>,
- {:put_chars, :unicode, "hello"}}
-** (ErlangError) erlang error: :terminated
+ pid = spawn(fn ->
+  receive do: (msg -> IO.inspect msg)
+ end)
+ IO.write(pid, "hello")
 ```
 
 After `IO.write/2`, we can see the request sent by the `IO` module printed out (a four-elements tuple). Soon after that, we see that it fails since the `IO` module expected some kind of result, which we did not supply.
@@ -154,15 +115,9 @@ In all of the examples above, we used binaries when writing to files. In the cha
 
 The functions in `IO` and `File` also allow lists to be given as arguments. Not only that, they also allow a mixed list of lists, integers, and binaries to be given:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> IO.puts('hello world')
-hello world
-:ok
-iex> IO.puts(['hello', ?\s, "world"])
-hello world
-:ok
+ IO.puts('hello world')
+ IO.puts(['hello', ?\s, "world"])
 ```
 
 However, using lists in IO operations requires some attention. A list may represent either a bunch of bytes or a bunch of characters and which one to use depends on the encoding of the IO device. If the file is opened without encoding, the file is expected to be in raw mode, and the functions in the `IO` module starting with `bin*` must be used. Those functions expect an `iodata` as an argument; i.e., they expect a list of integers representing bytes or binaries to be given.

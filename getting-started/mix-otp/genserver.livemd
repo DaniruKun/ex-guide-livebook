@@ -25,15 +25,10 @@ In the session above we interacted with the "shopping" bucket.
 
 Since agents are processes, each bucket has a process identifier (pid), but buckets do not have a name. Back [in the Process chapter](/getting-started/processes.html), we have learned that we can register processes in Elixir by giving them atom names:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> Agent.start_link(fn -> %{} end, name: :shopping)
-{:ok, #PID<0.43.0>}
-iex> KV.Bucket.put(:shopping, "milk", 1)
-:ok
-iex> KV.Bucket.get(:shopping, "milk")
-1
+ Agent.start_link(fn -> %{} end, name: :shopping)
+ KV.Bucket.put(:shopping, "milk", 1)
+ KV.Bucket.get(:shopping, "milk")
 ```
 
 However, naming dynamic processes with atoms is a terrible idea! If we use atoms, we would need to convert the bucket name (often received from an external client) to atoms, and **we should never convert user input to atoms**. This is because atoms are not garbage collected. Once an atom is created, it is never reclaimed. Generating atoms from user input would mean the user can inject enough different names to exhaust our system memory!
@@ -128,15 +123,10 @@ There are two types of requests you can send to a GenServer: calls and casts. Ca
 
 In order to invoke the callbacks above, we need to go through the corresponding `GenServer` functions. Let's start a registry, create a named bucket, and then look it up:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, registry} = GenServer.start_link(KV.Registry, :ok)
-{:ok, #PID<0.136.0>}
-iex> GenServer.cast(registry, {:create, "shopping"})
-:ok
-iex> {:ok, bk} = GenServer.call(registry, {:lookup, "shopping"})
-{:ok, #PID<0.174.0>}
+ {:ok, registry} = GenServer.start_link(KV.Registry, :ok)
+ GenServer.cast(registry, {:create, "shopping"})
+ {:ok, bk} = GenServer.call(registry, {:lookup, "shopping"})
 ```
 
 Our `KV.Registry` process received a cast with `{:create, "shopping"}` and a call with `{:lookup, "shopping"}`, in this sequence. `GenServer.cast` will immediately return, as soon as the message is sent to the `registry`. The `GenServer.call` on the other hand, is where we would be waiting for an answer, provided by the above `KV.Registry.handle_call` callback.
@@ -256,17 +246,11 @@ In order to fix this bug, we need the registry to monitor every bucket it spawns
 
 Let's first play with monitors by starting a new console with `iex -S mix`:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> {:ok, pid} = KV.Bucket.start_link([])
-{:ok, #PID<0.66.0>}
-iex> Process.monitor(pid)
-#Reference<0.0.0.551>
-iex> Agent.stop(pid)
-:ok
-iex> flush()
-{:DOWN, #Reference<0.0.0.551>, :process, #PID<0.66.0>, :normal}
+ {:ok, pid} = KV.Bucket.start_link([])
+ Process.monitor(pid)
+ Agent.stop(pid)
+ flush()
 ```
 
 Note `Process.monitor(pid)` returns a unique reference that allows us to match upcoming messages to that monitoring reference. After we stop the agent, we can `flush/0` all messages and notice a `:DOWN` message arrived, with the exact reference returned by `monitor`, notifying that the bucket process exited with reason `:normal`.

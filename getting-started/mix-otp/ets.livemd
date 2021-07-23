@@ -17,15 +17,10 @@ In this chapter, we will learn about ETS (Erlang Term Storage) and how to use it
 
 ETS allows us to store any Elixir term in an in-memory table. Working with ETS tables is done via [Erlang's `:ets` module](http://www.erlang.org/doc/man/ets.html):
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> table = :ets.new(:buckets_registry, [:set, :protected])
-#Reference<0.1885502827.460455937.234656>
-iex> :ets.insert(table, {"foo", self()})
-true
-iex> :ets.lookup(table, "foo")
-[{"foo", #PID<0.41.0>}]
+ table = :ets.new(:buckets_registry, [:set, :protected])
+ :ets.insert(table, {"foo", self()})
+ :ets.lookup(table, "foo")
 ```
 
 When creating an ETS table, two arguments are required: the table name and a set of options. From the available options, we passed the table type and its access rules. We have chosen the `:set` type, which means that keys cannot be duplicated. We've also set the table's access to `:protected`, meaning only the process that created the table can write to it, but all processes can read from it. The possible access controls:
@@ -40,15 +35,10 @@ Be aware that if your Read/Write call violates the access control, the operation
 
 ETS tables can also be named, allowing us to access them by a given name:
 
-<!-- livebook:{"force_markdown":true} -->
-
 ```elixir
-iex> :ets.new(:buckets_registry, [:named_table])
-:buckets_registry
-iex> :ets.insert(:buckets_registry, {"foo", self()})
-true
-iex> :ets.lookup(:buckets_registry, "foo")
-[{"foo", #PID<0.41.0>}]
+ :ets.new(:buckets_registry, [:named_table])
+ :ets.insert(:buckets_registry, {"foo", self()})
+ :ets.lookup(:buckets_registry, "foo")
 ```
 
 Let's change the `KV.Registry` to use ETS tables. The first change is to modify our registry to require a name argument, we will use it to name the ETS table and the registry process itself. ETS names and process names are stored in different locations, so there is no chance of conflicts.
